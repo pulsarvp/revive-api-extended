@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<?xml-stylesheet type="text/xsl" href=""?>
+
+<plugin>
+    <name>apiExtended</name>
+    <displayName>Revive Api extended</displayName>
+    <creationDate>2017-06-22</creationDate>
+    <author>PulsarVP</author>
+    <authorEmail>kuteiko@mail.com</authorEmail>
+    <authorUrl>https://github.com/pulsarvp/revive-api-extended</authorUrl>
+    <license><![CDATA[
+        <a href="http://creativecommons.org/licenses/by-nd/3.0/">Creative Commons Attribution-No Derivative Works 3.0 Unported</a>
+    ]]></license>
+    <description>Revive Api extended</description>
+    <version>1.0.0</version>
+    <oxversion>2.8.0</oxversion>
+    <extends>apiExtended</extends>
+    <install>
+
+        <files>
+            <file path="{MODULEPATH}api/apiExtended/">apiExtended.class.php</file>
+        </files>
+
+    </install>
+</plugin>
