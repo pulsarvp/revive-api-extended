@@ -21,7 +21,7 @@
 		function getAdvertiserByName ($name, &$oAdvertiser)
 		{
 			$doAdvertiser = OA_Dal::factoryDO('clients');
-			$doAdvertiser->get('name', $name);
+			$doAdvertiser->get('clientname', $name);
 			$advertiserData = $doAdvertiser->toArray();
 
 			$oAdvertiser = new OA_Dll_AdvertiserInfo;
