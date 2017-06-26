@@ -56,6 +56,21 @@
 			}
 		}
 
+		function getAdvertiserByName ($sessionId, $name, &$oAdvertiser)
+		{
+			if ($this->verifySession($sessionId))
+			{
+
+				return $this->_validateResult(
+					$this->_dllAdvertiser->getAdvertiserByName($name, $oAdvertiser));
+			}
+			else
+			{
+
+				return false;
+			}
+		}
+
 	}
 
 ?>

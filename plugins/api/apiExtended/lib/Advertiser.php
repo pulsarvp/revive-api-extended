@@ -9,6 +9,26 @@
 	 */
 	class Advertiser extends OA_Dll_Advertiser
 	{
+		/**
+		 *
+		 * @access public
+		 *
+		 * @param string                $name
+		 * @param OA_Dll_AdvertiserInfo $oAdvertiser
+		 *
+		 * @return bool
+		 */
+		function getAdvertiserByName ($name, &$oAdvertiser)
+		{
+			$doAdvertiser = OA_Dal::factoryDO('clients');
+			$doAdvertiser->get('clientname', $name);
+			$advertiserData = $doAdvertiser->toArray();
 
+			$oAdvertiser = new OA_Dll_AdvertiserInfo;
+
+			$this->_setAdvertiserDataFromArray($oAdvertiser, $advertiserData);
+
+			return true;
+		}
 
 	}

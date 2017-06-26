@@ -19,13 +19,15 @@
 
         <files>
             <file path="{MODULEPATH}api/apiExtended/">apiExtended.class.php</file>
+            <file path="{MODULEPATH}api/apiExtended/lib/">Advertiser.php</file>
+            <file path="{MODULEPATH}api/apiExtended/lib/">AdvertiserServiceImplExtend.php</file>
+            <file path="{MODULEPATH}api/apiExtended/lib/">Agency.php</file>
             <file path="{MODULEPATH}api/apiExtended/lib/">AgencyServiceImplExtend.php</file>
             <file path="{MODULEPATH}api/apiExtended/lib/">Banner.php</file>
-            <file path="{MODULEPATH}api/apiExtended/lib/">User.php</file>
-            <file path="{MODULEPATH}api/apiExtended/lib/">AdvertiserServiceImplExtend.php</file>
             <file path="{MODULEPATH}api/apiExtended/lib/">BannerServiceImplExtend.php</file>
-            <file path="{MODULEPATH}api/apiExtended/lib/">Agency.php</file>
-            <file path="{MODULEPATH}api/apiExtended/lib/">Advertiser.php</file>
+            <file path="{MODULEPATH}api/apiExtended/lib/">CampaignServiceImplExtend.php</file>
+            <file path="{MODULEPATH}api/apiExtended/lib/">User.php</file>
+            <file path="{MODULEPATH}api/apiExtended/lib/">UserServiceImplExtend.php</file>
             <file path="{MODULEPATH}api/apiExtended/lib/">UserServiceImplExtend.php</file>
         </files>
 
