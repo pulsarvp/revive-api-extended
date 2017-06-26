@@ -5,8 +5,11 @@
 // Require the XML-RPC utilities.
 	require_once MAX_PATH . '/www/api/v2/common/XmlRpcUtils.php';
 
-// Require Banner Service Implementation
+// Require Service Implementation
 	require_once MAX_PATH . '/plugins/api/apiExtended/lib/BannerServiceImplExtend.php';
+	require_once MAX_PATH . '/plugins/api/apiExtended/lib/AdvertiserServiceImplExtend.php';
+	require_once MAX_PATH . '/plugins/api/apiExtended/lib/AgencyServiceImplExtend.php';
+	require_once MAX_PATH . '/plugins/api/apiExtended/lib/UserServiceImplExtend.php';
 
 	// Require the BannerInfo class.
 	require_once MAX_PATH . '/lib/OA/Dll/Banner.php';
@@ -28,6 +31,24 @@
 		 * @var BannerServiceImplExtend $_oBannerServiceImp
 		 */
 		var $_oBannerServiceImp;
+		/**
+		 * Reference to advertiser Service implementation.
+		 *
+		 * @var AdvertiserServiceImpl $_oAdvertiserServiceImp
+		 */
+		var $_oAdvertiserServiceImp;
+		/**
+		 * Reference to agency Service implementation.
+		 *
+		 * @var AgencyServiceImpl $_oAgencyServiceImp
+		 */
+		var $_oAgencyServiceImp;
+		/**
+		 * Reference to User Service implementation.
+		 *
+		 * @var UserServiceImpl $_oUserServiceImp
+		 */
+		var $_oUserServiceImp;
 
 		/**
 		 * This method initialises Service implementation object field.
@@ -36,6 +57,9 @@
 		function __construct ()
 		{
 			$this->_oBannerServiceImp = new BannerServiceImplExtend();
+			$this->_oAdvertiserServiceImp = new AdvertiserServiceImplExtend();
+			$this->_oUserServiceImp = new UserServiceImplExtend();
+			$this->_oAgencyServiceImp = new AgencyServiceImplExtend();
 		}
 
 		function getDispatchMap ()
@@ -47,6 +71,13 @@
 						[ 'struct', 'string', 'array' ]
 					],
 					'docstring' => 'Get Banner Information'
+				],
+				'ox.getAdvertisers'     => [
+					'function'  => [ $this, 'getAdvertisers' ],
+					'signature' => [
+						[ 'struct', 'string', 'string' ]
+					],
+					'docstring' => 'Get Advertisers List'
 				],
 			];
 		}
@@ -86,5 +117,57 @@
 
 				return XmlRpcUtils::generateError($this->_oBannerServiceImp->getLastError());
 			}
+		}
+
+		/**
+		 * The getAdvertisers method returns a list of advertisers
+		 * the name agents or users, or returns an error message.
+		 *
+		 * @access public
+		 *
+		 * @param XML_RPC_Message &$oParams
+		 *
+		 * @return XML_RPC_Response result (data or error)
+		 */
+		function getAdvertisers ($oParams)
+		{
+
+			$oResponseWithError = null;
+			if (!XmlRpcUtils::getScalarValues(
+				[ &$sessionId, &$name ],
+				[ true, true ], $oParams, $oResponseWithError)
+			)
+			{
+				return $oResponseWithError;
+			}
+
+			$oAgency = null;
+			$oUser = null;
+			$this->_oAgencyServiceImp->getAgencyByName($sessionId, $name, $oAgency);
+
+			if ($oAgency->agencyId == 0)
+			{
+
+				$this->_oUserServiceImp->getUserByName($sessionId, $name, $oUser);
+
+				if ($oUser->userId == 0)
+					return XmlRpcUtils::generateError("Not fount agency or users");
+				$this->_oAgencyServiceImp->getAgencyByAccountID($sessionId, $oUser->defaultAccountId, $oAgency);
+			}
+
+			$aAdvertiserList = null;
+			if ($this->_oAdvertiserServiceImp->getAdvertisers($sessionId,
+				$oAgency->agencyId, $aAdvertiserList)
+			)
+			{
+
+				return XmlRpcUtils::getArrayOfEntityResponse($aAdvertiserList);
+			}
+			else
+			{
+
+				return XmlRpcUtils::generateError($this->_oAdvertiserServiceImp->getLastError());
+			}
+
 		}
 	}
