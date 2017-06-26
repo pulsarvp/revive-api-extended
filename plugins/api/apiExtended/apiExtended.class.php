@@ -11,7 +11,7 @@
 	require_once MAX_PATH . '/plugins/api/apiExtended/lib/BannerServiceImplExtend.php';
 	require_once MAX_PATH . '/plugins/api/apiExtended/lib/CampaignServiceImplExtend.php';
 	require_once MAX_PATH . '/plugins/api/apiExtended/lib/UserServiceImplExtend.php';
-	
+
 	// Require the XML-RPC classes on the server.
 	require_once MAX_PATH . '/lib/pear/XML/RPC/Server.php';
 
@@ -71,6 +71,13 @@
 		function getDispatchMap ()
 		{
 			return [
+				'ox.getAdvertisers'     => [
+					'function'  => [ $this, 'getAdvertisers' ],
+					'signature' => [
+						[ 'struct', 'string', 'string' ]
+					],
+					'docstring' => 'Get Advertisers List By User Or Agency Name'
+				],
 				'ox.getBannersKeywords' => [
 					'function'  => [ $this, 'getBannersKeywords' ],
 					'signature' => [
@@ -78,12 +85,12 @@
 					],
 					'docstring' => 'Get Banner Information by keywords'
 				],
-				'ox.getAdvertisers'     => [
-					'function'  => [ $this, 'getAdvertisers' ],
+				'ox.getBanners'         => [
+					'function'  => [ $this, 'getBanners' ],
 					'signature' => [
 						[ 'struct', 'string', 'string' ]
 					],
-					'docstring' => 'Get Advertisers List By User Or Agency Name'
+					'docstring' => 'Get Banner Information By Campaign Name'
 				],
 				'ox.getCampaigns'       => [
 					'function'  => [ $this, 'getCampaigns' ],
@@ -143,6 +150,49 @@
 			{
 
 				return XmlRpcUtils::generateError($this->_oAdvertiserServiceImp->getLastError());
+			}
+		}
+
+		/**
+		 * The getBanners method returns a list of banners
+		 * the name campaign, or returns an error message.
+		 *
+		 * @access public
+		 *
+		 * @param XML_RPC_Message &$oParams
+		 *
+		 * @return XML_RPC_Response result (data or error)
+		 */
+		function getBanners ($oParams)
+		{
+
+			$oResponseWithError = null;
+			if (!XmlRpcUtils::getScalarValues(
+				[ &$sessionId, &$name ],
+				[ true, true ], $oParams, $oResponseWithError)
+			)
+			{
+				return $oResponseWithError;
+			}
+
+			$oCampaign = null;
+			$this->_oCampaignServiceImp->getCampaignByName($sessionId, $name, $oCampaign);
+
+			if ($oCampaign->campaignId == 0)
+				return XmlRpcUtils::generateError("Not found campaign");
+
+			$aBannersList = null;
+			if ($this->_oBannerServiceImp->getBannerListByCampaignId($sessionId,
+				$oCampaign->campaignId, $aBannersList)
+			)
+			{
+
+				return XmlRpcUtils::getArrayOfEntityResponse($aBannersList);
+			}
+			else
+			{
+
+				return XmlRpcUtils::generateError($this->_oBannerServiceImp->getLastError());
 			}
 		}
 
