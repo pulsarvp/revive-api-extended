@@ -6,14 +6,12 @@
 	require_once MAX_PATH . '/www/api/v2/common/XmlRpcUtils.php';
 
 // Require Service Implementation
-	require_once MAX_PATH . '/plugins/api/apiExtended/lib/BannerServiceImplExtend.php';
 	require_once MAX_PATH . '/plugins/api/apiExtended/lib/AdvertiserServiceImplExtend.php';
 	require_once MAX_PATH . '/plugins/api/apiExtended/lib/AgencyServiceImplExtend.php';
+	require_once MAX_PATH . '/plugins/api/apiExtended/lib/BannerServiceImplExtend.php';
+	require_once MAX_PATH . '/plugins/api/apiExtended/lib/CampaignServiceImplExtend.php';
 	require_once MAX_PATH . '/plugins/api/apiExtended/lib/UserServiceImplExtend.php';
-
-	// Require the BannerInfo class.
-	require_once MAX_PATH . '/lib/OA/Dll/Banner.php';
-
+	
 	// Require the XML-RPC classes on the server.
 	require_once MAX_PATH . '/lib/pear/XML/RPC/Server.php';
 
@@ -25,12 +23,6 @@
 	class Plugins_Api_ApiExtended_apiExtended extends Plugins_Api
 	{
 
-		/**
-		 * Reference to banner Service implementation.
-		 *
-		 * @var BannerServiceImplExtend $_oBannerServiceImp
-		 */
-		var $_oBannerServiceImp;
 		/**
 		 * Reference to advertiser Service implementation.
 		 *
@@ -44,6 +36,18 @@
 		 */
 		var $_oAgencyServiceImp;
 		/**
+		 * Reference to banner Service implementation.
+		 *
+		 * @var BannerServiceImplExtend $_oBannerServiceImp
+		 */
+		var $_oBannerServiceImp;
+		/**
+		 * Reference to campaign Service implementation.
+		 *
+		 * @var CampaignServiceImplExtend $_oCampaignServiceImp
+		 */
+		var $_oCampaignServiceImp;
+		/**
 		 * Reference to User Service implementation.
 		 *
 		 * @var UserServiceImpl $_oUserServiceImp
@@ -56,10 +60,12 @@
 		 */
 		function __construct ()
 		{
-			$this->_oBannerServiceImp = new BannerServiceImplExtend();
+
 			$this->_oAdvertiserServiceImp = new AdvertiserServiceImplExtend();
-			$this->_oUserServiceImp = new UserServiceImplExtend();
 			$this->_oAgencyServiceImp = new AgencyServiceImplExtend();
+			$this->_oBannerServiceImp = new BannerServiceImplExtend();
+			$this->_oCampaignServiceImp = new CampaignServiceImplExtend();
+			$this->_oUserServiceImp = new UserServiceImplExtend();
 		}
 
 		function getDispatchMap ()
@@ -70,53 +76,23 @@
 					'signature' => [
 						[ 'struct', 'string', 'array' ]
 					],
-					'docstring' => 'Get Banner Information'
+					'docstring' => 'Get Banner Information by keywords'
 				],
 				'ox.getAdvertisers'     => [
 					'function'  => [ $this, 'getAdvertisers' ],
 					'signature' => [
 						[ 'struct', 'string', 'string' ]
 					],
-					'docstring' => 'Get Advertisers List'
+					'docstring' => 'Get Advertisers List By User Or Agency Name'
+				],
+				'ox.getCampaigns'       => [
+					'function'  => [ $this, 'getCampaigns' ],
+					'signature' => [
+						[ 'struct', 'string', 'string' ]
+					],
+					'docstring' => 'Get Campaigns List By Advertiser Name'
 				],
 			];
-		}
-
-		/**
-		 * The getBannersKeywords method returns a list of banners
-		 * the keyword, or returns an error message.
-		 *
-		 * @access public
-		 *
-		 * @param XML_RPC_Message &$oParams
-		 *
-		 * @return XML_RPC_Response result (data or error)
-		 */
-		function getBannersKeywords ($oParams)
-		{
-
-			$oResponseWithError = null;
-			if (!XmlRpcUtils::getScalarValues(
-				[ &$sessionId, &$keywords ],
-				[ true, true ], $oParams, $oResponseWithError)
-			)
-			{
-				return $oResponseWithError;
-			}
-
-			$aBannerList = null;
-			if ($this->_oBannerServiceImp->getBannersKeywords($sessionId,
-				$keywords, $aBannerList)
-			)
-			{
-
-				return XmlRpcUtils::getArrayOfEntityResponse($aBannerList);
-			}
-			else
-			{
-
-				return XmlRpcUtils::generateError($this->_oBannerServiceImp->getLastError());
-			}
 		}
 
 		/**
@@ -167,6 +143,86 @@
 			{
 
 				return XmlRpcUtils::generateError($this->_oAdvertiserServiceImp->getLastError());
+			}
+		}
+
+		/**
+		 * The getBannersKeywords method returns a list of banners
+		 * the keyword, or returns an error message.
+		 *
+		 * @access public
+		 *
+		 * @param XML_RPC_Message &$oParams
+		 *
+		 * @return XML_RPC_Response result (data or error)
+		 */
+		function getBannersKeywords ($oParams)
+		{
+
+			$oResponseWithError = null;
+			if (!XmlRpcUtils::getScalarValues(
+				[ &$sessionId, &$keywords ],
+				[ true, true ], $oParams, $oResponseWithError)
+			)
+			{
+				return $oResponseWithError;
+			}
+
+			$aBannerList = null;
+			if ($this->_oBannerServiceImp->getBannersKeywords($sessionId,
+				$keywords, $aBannerList)
+			)
+			{
+
+				return XmlRpcUtils::getArrayOfEntityResponse($aBannerList);
+			}
+			else
+			{
+
+				return XmlRpcUtils::generateError($this->_oBannerServiceImp->getLastError());
+			}
+		}
+
+		/**
+		 * The getCampaigns method returns a list of campaigns
+		 * the name advertiser, or returns an error message.
+		 *
+		 * @access public
+		 *
+		 * @param XML_RPC_Message &$oParams
+		 *
+		 * @return XML_RPC_Response result (data or error)
+		 */
+		function getCampaigns ($oParams)
+		{
+
+			$oResponseWithError = null;
+			if (!XmlRpcUtils::getScalarValues(
+				[ &$sessionId, &$name ],
+				[ true, true ], $oParams, $oResponseWithError)
+			)
+			{
+				return $oResponseWithError;
+			}
+
+			$oAdvertiser = null;
+			$this->_oAdvertiserServiceImp->getAdvertiserByName($sessionId, $name, $oAdvertiser);
+
+			if ($oAdvertiser->advertiserId == 0)
+				return XmlRpcUtils::generateError("Not found advertiser");
+
+			$aCampaignsList = null;
+			if ($this->_oCampaignServiceImp->getCampaignListByAdvertiserId($sessionId,
+				$oAdvertiser->advertiserId, $aCampaignsList)
+			)
+			{
+
+				return XmlRpcUtils::getArrayOfEntityResponse($aCampaignsList);
+			}
+			else
+			{
+
+				return XmlRpcUtils::generateError($this->_oCampaignServiceImp->getLastError());
 			}
 		}
 	}
