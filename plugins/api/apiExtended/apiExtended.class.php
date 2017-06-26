@@ -151,7 +151,7 @@
 				$this->_oUserServiceImp->getUserByName($sessionId, $name, $oUser);
 
 				if ($oUser->userId == 0)
-					return XmlRpcUtils::generateError("Not fount agency or users");
+					return XmlRpcUtils::generateError("Not found agency or users");
 				$this->_oAgencyServiceImp->getAgencyByAccountID($sessionId, $oUser->defaultAccountId, $oAgency);
 			}
 
@@ -168,6 +168,5 @@
 
 				return XmlRpcUtils::generateError($this->_oAdvertiserServiceImp->getLastError());
 			}
-
 		}
 	}
