@@ -11,6 +11,7 @@
 	require_once MAX_PATH . '/plugins/api/apiExtended/lib/BannerServiceImplExtend.php';
 	require_once MAX_PATH . '/plugins/api/apiExtended/lib/CampaignServiceImplExtend.php';
 	require_once MAX_PATH . '/plugins/api/apiExtended/lib/UserServiceImplExtend.php';
+	require_once MAX_PATH . '/plugins/api/apiExtended/lib/ZoneServiceImplExtend.php';
 
 	// Require the XML-RPC classes on the server.
 	require_once MAX_PATH . '/lib/pear/XML/RPC/Server.php';
@@ -53,6 +54,12 @@
 		 * @var UserServiceImpl $_oUserServiceImp
 		 */
 		var $_oUserServiceImp;
+		/**
+		 * Reference to Zone Service implementation.
+		 *
+		 * @var ZoneServiceImpl $_oZoneServiceImp
+		 */
+		var $_oZoneServiceImp;
 
 		/**
 		 * This method initialises Service implementation object field.
@@ -66,6 +73,7 @@
 			$this->_oBannerServiceImp = new BannerServiceImplExtend();
 			$this->_oCampaignServiceImp = new CampaignServiceImplExtend();
 			$this->_oUserServiceImp = new UserServiceImplExtend();
+			$this->_oZoneServiceImp = new ZoneServiceImplExtend();
 		}
 
 		function getDispatchMap ()
@@ -78,19 +86,26 @@
 					],
 					'docstring' => 'Get Advertisers List By User Or Agency Name'
 				],
-				'ox.getBannersKeywords' => [
-					'function'  => [ $this, 'getBannersKeywords' ],
-					'signature' => [
-						[ 'struct', 'string', 'array' ]
-					],
-					'docstring' => 'Get Banner Information by keywords'
-				],
 				'ox.getBanners'         => [
 					'function'  => [ $this, 'getBanners' ],
 					'signature' => [
 						[ 'struct', 'string', 'string' ]
 					],
 					'docstring' => 'Get Banner Information By Campaign Name'
+				],
+				'ox.getBannersByZone'   => [
+					'function'  => [ $this, 'getBannersByZone' ],
+					'signature' => [
+						[ 'struct', 'string', 'string' ]
+					],
+					'docstring' => 'Get Banner Information by zone'
+				],
+				'ox.getBannersKeywords' => [
+					'function'  => [ $this, 'getBannersKeywords' ],
+					'signature' => [
+						[ 'struct', 'string', 'array' ]
+					],
+					'docstring' => 'Get Banner Information by keywords'
 				],
 				'ox.getCampaigns'       => [
 					'function'  => [ $this, 'getCampaigns' ],
@@ -184,6 +199,57 @@
 			$aBannersList = null;
 			if ($this->_oBannerServiceImp->getBannerListByCampaignId($sessionId,
 				$oCampaign->campaignId, $aBannersList)
+			)
+			{
+
+				return XmlRpcUtils::getArrayOfEntityResponse($aBannersList);
+			}
+			else
+			{
+
+				return XmlRpcUtils::generateError($this->_oBannerServiceImp->getLastError());
+			}
+		}
+
+		/**
+		 * The getBannersByZone method returns a list of banners
+		 * the name zone, or returns an error message.
+		 *
+		 * @access public
+		 *
+		 * @param XML_RPC_Message &$oParams
+		 *
+		 * @return XML_RPC_Response result (data or error)
+		 */
+		function getBannersByZone ($oParams)
+		{
+
+			$oResponseWithError = null;
+			if (!XmlRpcUtils::getScalarValues(
+				[ &$sessionId, &$name ],
+				[ true, true ], $oParams, $oResponseWithError)
+			)
+			{
+				return $oResponseWithError;
+			}
+			$oZone = null;
+			$this->_oZoneServiceImp->getZoneByName($sessionId, $name, $oZone);
+
+			if ($oZone->zoneId == 0)
+				return XmlRpcUtils::generateError("Not found zone");
+
+			$ad_zone = [];
+			$this->_oBannerServiceImp->getBannersIds($sessionId,
+				$oZone->zoneId, $ad_zone);
+			$ids = [];
+			foreach ($ad_zone as $v)
+			{
+				$ids[] = $v[ 'ad_id' ];
+			}
+
+			$aBannersList = null;
+			if ($this->_oBannerServiceImp->getBanners($sessionId,
+				$ids, $aBannersList)
 			)
 			{
 
