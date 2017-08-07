@@ -41,6 +41,9 @@
 		function getBanners ($ids, &$aBannerList)
 		{
 			$aBannerList = [];
+			
+			if (count($ids) == 0)
+				return true;
 
 			$doBanner = OA_Dal::factoryDO('banners');
 			$doBanner->whereInAdd('bannerid', $ids, "OR");
